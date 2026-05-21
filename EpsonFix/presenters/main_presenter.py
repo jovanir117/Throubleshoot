@@ -6,6 +6,8 @@ from models.solution import Solution, RepairSession
 from models.error_event import ErrorEvent
 from core.printer_detector import list_printers, DetectedPrinter
 from core.diagnosis_engine import DiagnosisEngine
+from core.system_health import get_system_health_report
+from core.auto_fix import run_auto_fix
 
 
 class MainPresenter:
@@ -99,11 +101,13 @@ class MainPresenter:
         DiagnosisDialog(self.view, printer=printer, on_diagnose=self._run_diagnosis)
 
     def _run_diagnosis(self, user_input: str, printer: PrinterProfile):
+        health = get_system_health_report()
         diagnosis = self.engine.diagnose_smart(user_input)
         if not diagnosis:
             self.view.show_info(
                 "Sin resultado",
-                f"No encontré solución para '{user_input}'.\nRevisa el código de error o describe el problema."
+                f"No encontré solución para '{user_input}'.\nRevisa el código de error o describe el problema.\n\n"
+                f"{health.summary}"
             )
             return
 
@@ -117,12 +121,20 @@ class MainPresenter:
         self.db.add(event)
         self.db.commit()
 
+        auto_fix = run_auto_fix(diagnosis.category)
+        if auto_fix.applied:
+            self.view.show_info(auto_fix.title, auto_fix.details)
+
         # Busca solución rankeada
         solution = self._get_best_solution(diagnosis, printer)
         if not solution:
             self.view.show_info(
                 diagnosis.title,
-                f"{diagnosis.description}\n\nNo hay pasos detallados en la base de conocimiento."
+                f"{diagnosis.description}\n\n"
+                f"Causas raíz probables:\n- " + "\n- ".join(diagnosis.probable_causes) +
+                "\n\nNo hay pasos detallados en la base de conocimiento.\n\n"
+                f"{health.summary}\n"
+                + "\n".join(f"- {r}" for r in health.recommendations)
             )
             return
 

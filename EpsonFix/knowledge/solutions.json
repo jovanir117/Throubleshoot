@@ -299,5 +299,47 @@
         "verification_question": "¿Necesitas ayuda para localizar el centro de servicio más cercano?"
       }
     ]
+  },
+  {
+    "error_code": "system",
+    "title": "Recuperar salud del sistema (almacenamiento/spooler/driver)",
+    "difficulty": "medium",
+    "estimated_minutes": 25,
+    "requires_admin": true,
+    "applicable_series": "ALL",
+    "steps": [
+      {
+        "order": 1,
+        "title": "Validar espacio en disco del sistema",
+        "description": "Abre PowerShell como Administrador y ejecuta: Get-PSDrive -PSProvider FileSystem. Si la unidad del sistema tiene menos de 15% libre, libera espacio antes de seguir.",
+        "tip": "Meta mínima: 15-20% libre en C:.",
+        "verification_question": "¿La unidad del sistema ya tiene al menos 15% libre?"
+      },
+      {
+        "order": 2,
+        "title": "Limpiar temporales y cola de impresión",
+        "description": "Ejecuta como Administrador: net stop spooler ; Remove-Item -Path \"$env:windir\\System32\\spool\\PRINTERS\\*\" -Force -ErrorAction SilentlyContinue ; net start spooler. Luego limpia temporales con cleanmgr o Configuración > Almacenamiento.",
+        "verification_question": "¿Se reinició spooler sin errores y se limpiaron temporales?"
+      },
+      {
+        "order": 3,
+        "title": "Reparar archivos del sistema",
+        "description": "Ejecuta en CMD Admin: sfc /scannow y después DISM /Online /Cleanup-Image /RestoreHealth.",
+        "tip": "Estos comandos corrigen corrupción de componentes de Windows que rompe impresión/driver.",
+        "verification_question": "¿SFC/DISM terminaron sin errores críticos?"
+      },
+      {
+        "order": 4,
+        "title": "Reinstalación limpia del driver Epson",
+        "description": "Desinstala Epson, reinicia, instala driver oficial completo y conecta impresora solo cuando el instalador lo pida.",
+        "verification_question": "¿La reinstalación terminó y la impresora aparece en línea?"
+      },
+      {
+        "order": 5,
+        "title": "Prueba persistente",
+        "description": "Imprime 3 trabajos seguidos (página de prueba + PDF + documento). Verifica que no regrese offline ni atasco de cola.",
+        "verification_question": "¿Los 3 trabajos completaron sin fallas?"
+      }
+    ]
   }
 ]
