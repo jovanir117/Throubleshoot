@@ -1,0 +1,148 @@
+from __future__ import annotations
+from datetime import datetime
+from database.db_manager import get_session
+from models.printer import PrinterProfile
+from models.solution import Solution, RepairSession
+from models.error_event import ErrorEvent
+from core.printer_detector import list_printers, DetectedPrinter
+from core.diagnosis_engine import DiagnosisEngine
+
+
+class MainPresenter:
+    """Conecta MainWindow con modelos y lógica de negocio."""
+
+    def __init__(self):
+        self.view = None
+        self.db = get_session()
+        self.engine = DiagnosisEngine(self.db)
+        self._selected_printer: PrinterProfile | None = None
+
+    def attach_view(self, view):
+        self.view = view
+        self.refresh()
+
+    def refresh(self):
+        printers = self.db.query(PrinterProfile).filter_by(is_active=True).all()
+        try:
+            detected = {p.system_name: p.status_code for p in list_printers()}
+        except Exception:
+            detected = {}
+        status_map = {p.system_name: detected.get(p.system_name, 8) for p in printers}
+
+        sessions = (
+            self.db.query(RepairSession)
+            .order_by(RepairSession.started_at.desc())
+            .limit(8)
+            .all()
+        )
+        self.view.render_printers(printers, status_map)
+        self.view.render_recent_history(sessions)
+
+    # ── Acciones del usuario ───────────────────────────────────────────────
+
+    def on_add_printer(self):
+        from views.add_printer_dialog import AddPrinterDialog
+        dialog = AddPrinterDialog(self.view, on_save=self._save_printer)
+
+    def on_diagnose_printer(self, printer: PrinterProfile):
+        self._selected_printer = printer
+        self._open_diagnosis_dialog(printer)
+
+    def on_view_history(self, printer: PrinterProfile):
+        from views.history_view import HistoryView
+        HistoryView(self.view, printer=printer, db=self.db)
+
+    def on_quick_diagnose(self, error_code: str):
+        if not self._selected_printer:
+            printers = self.db.query(PrinterProfile).filter_by(is_active=True).limit(1).all()
+            if not printers:
+                self.view.show_info("Sin impresoras", "Agrega una impresora primero.")
+                return
+            self._selected_printer = printers[0]
+        self._run_diagnosis(error_code, self._selected_printer)
+
+    def on_symptom_diagnose(self, symptom: str):
+        if not self._selected_printer:
+            printers = self.db.query(PrinterProfile).filter_by(is_active=True).limit(1).all()
+            if not printers:
+                self.view.show_info("Sin impresoras", "Agrega una impresora primero.")
+                return
+            self._selected_printer = printers[0]
+        self._run_diagnosis(symptom, self._selected_printer)
+
+    def on_wizard_complete(self, printer, solution, outcome, steps_completed, notes):
+        session = RepairSession(
+            printer_id=printer.id,
+            solution_id=solution.id,
+            error_code=solution.error_code,
+            started_at=datetime.utcnow(),
+            completed_at=datetime.utcnow(),
+            outcome=outcome,
+            steps_completed=steps_completed,
+            notes=notes,
+        )
+        self.db.add(session)
+
+        if outcome == "fixed":
+            solution.success_count += 1
+        solution.attempt_count += 1
+        self.db.commit()
+
+        msg = {"fixed": "¡Problema resuelto!", "partial": "Solución parcial.", "failed": "No funcionó esta vez."}.get(outcome, "")
+        self.view.show_info("Resultado", msg)
+        self.refresh()
+
+    # ── Helpers ───────────────────────────────────────────────────────────
+
+    def _open_diagnosis_dialog(self, printer: PrinterProfile):
+        from views.diagnosis_dialog import DiagnosisDialog
+        DiagnosisDialog(self.view, printer=printer, on_diagnose=self._run_diagnosis)
+
+    def _run_diagnosis(self, user_input: str, printer: PrinterProfile):
+        diagnosis = self.engine.diagnose_smart(user_input)
+        if not diagnosis:
+            self.view.show_info(
+                "Sin resultado",
+                f"No encontré solución para '{user_input}'.\nRevisa el código de error o describe el problema."
+            )
+            return
+
+        # Registra evento
+        event = ErrorEvent(
+            printer_id=printer.id,
+            error_code=diagnosis.error_code,
+            category=diagnosis.category,
+            description=diagnosis.description,
+        )
+        self.db.add(event)
+        self.db.commit()
+
+        # Busca solución rankeada
+        solution = self._get_best_solution(diagnosis, printer)
+        if not solution:
+            self.view.show_info(
+                diagnosis.title,
+                f"{diagnosis.description}\n\nNo hay pasos detallados en la base de conocimiento."
+            )
+            return
+
+        self.view.show_wizard(solution, printer)
+
+    def _get_best_solution(self, diagnosis, printer: PrinterProfile) -> Solution | None:
+        solutions = (
+            self.db.query(Solution)
+            .filter(Solution.error_code == diagnosis.category)
+            .all()
+        )
+        # Filtra por serie y rankea por tasa de éxito
+        applicable = [s for s in solutions if s.applies_to(printer.series or "ALL")]
+        if not applicable:
+            applicable = solutions
+        applicable.sort(key=lambda s: s.success_rate, reverse=True)
+        return applicable[0] if applicable else None
+
+    def _save_printer(self, data: dict):
+        printer = PrinterProfile(**data)
+        self.db.add(printer)
+        self.db.commit()
+        self.refresh()

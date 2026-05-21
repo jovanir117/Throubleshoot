@@ -1,0 +1,303 @@
+[
+  {
+    "error_code": "waste_ink",
+    "title": "Resetear contador de almohadilla de tinta",
+    "difficulty": "medium",
+    "estimated_minutes": 10,
+    "requires_admin": false,
+    "applicable_series": "ALL",
+    "steps": [
+      {
+        "order": 1,
+        "title": "Descarga el software de reset",
+        "description": "Necesitas 'Epson Adjustment Program' o 'SSC Service Utility' para tu modelo. Busca '[tu modelo] adjustment program' en Google. Para L-Series (EcoTank) el programa es gratuito.",
+        "tip": "Asegúrate de descargar el programa correcto para tu serie de impresora.",
+        "verification_question": "¿Ya tienes el programa descargado?"
+      },
+      {
+        "order": 2,
+        "title": "Conecta la impresora por USB",
+        "description": "El reset debe hacerse por cable USB, no por WiFi. Conecta tu impresora directamente a la computadora con un cable USB.",
+        "tip": "Si solo tienes WiFi, algunos modelos permiten reset desde el menú de la impresora.",
+        "verification_question": "¿La computadora reconoce la impresora por USB?"
+      },
+      {
+        "order": 3,
+        "title": "Abre el programa de ajuste",
+        "description": "Ejecuta el programa como Administrador (clic derecho → 'Ejecutar como administrador'). Selecciona el puerto USB de tu impresora.",
+        "tip": "Busca la opción 'Waste ink pad counter' o 'Almohadilla de tinta'.",
+        "verification_question": "¿El programa detectó tu impresora?"
+      },
+      {
+        "order": 4,
+        "title": "Resetea el contador",
+        "description": "Marca la casilla 'Waste ink pad counter' y haz clic en 'Initialize' o 'Reset'. El programa te pedirá que apagues y enciendas la impresora.",
+        "tip": "Este proceso tarda menos de 1 minuto.",
+        "verification_question": "¿El programa mostró 'OK' o 'Completado'?"
+      },
+      {
+        "order": 5,
+        "title": "Reinicia y prueba",
+        "description": "Apaga la impresora, espera 10 segundos, enciéndela. La luz de error debe apagarse. Imprime una página de prueba.",
+        "verification_question": "¿La impresora encendió sin error y pudo imprimir?"
+      }
+    ]
+  },
+  {
+    "error_code": "paper",
+    "title": "Resolver atasco de papel",
+    "difficulty": "easy",
+    "estimated_minutes": 5,
+    "requires_admin": false,
+    "applicable_series": "ALL",
+    "steps": [
+      {
+        "order": 1,
+        "title": "Apaga la impresora completamente",
+        "description": "Presiona el botón de encendido para apagar. Desconecta el cable de poder. Espera 30 segundos.",
+        "tip": "Nunca intentes retirar papel con la impresora encendida.",
+        "verification_question": "¿Está apagada y desconectada?"
+      },
+      {
+        "order": 2,
+        "title": "Abre todas las tapas de acceso",
+        "description": "Abre la tapa trasera (si tiene) y la tapa frontal. En impresoras EcoTank, hay una tapa trasera de alimentación de papel.",
+        "verification_question": "¿Puedes ver el camino del papel?"
+      },
+      {
+        "order": 3,
+        "title": "Retira el papel con cuidado",
+        "description": "Tira del papel LENTAMENTE en la dirección que normalmente sale (hacia adelante). Nunca jales hacia atrás. Si está muy atorado, busca el papel desde atrás.",
+        "tip": "Usa linterna para ver si quedaron trozos de papel.",
+        "verification_question": "¿Salió todo el papel sin romperse?"
+      },
+      {
+        "order": 4,
+        "title": "Verifica que no queden fragmentos",
+        "description": "Con una linterna, revisa todo el camino del papel. Un pequeño trozo de papel puede causar atascos repetidos.",
+        "verification_question": "¿El camino del papel está completamente libre?"
+      },
+      {
+        "order": 5,
+        "title": "Enciende y prueba",
+        "description": "Cierra todas las tapas. Conecta el cable de poder. Enciende la impresora. Carga papel nuevo correctamente y haz una prueba de impresión.",
+        "verification_question": "¿La impresora encendió sin error?"
+      }
+    ]
+  },
+  {
+    "error_code": "head_clog",
+    "title": "Limpiar cabezal de impresión (rayas / colores mal)",
+    "difficulty": "easy",
+    "estimated_minutes": 15,
+    "requires_admin": false,
+    "applicable_series": "ALL",
+    "steps": [
+      {
+        "order": 1,
+        "title": "Ejecuta limpieza automática desde Windows",
+        "description": "Ve a Panel de Control → Dispositivos e Impresoras → Clic derecho en tu Epson → 'Preferencias de impresión' → pestaña 'Mantenimiento' → 'Limpieza de cabezales'.",
+        "tip": "También puedes hacerlo desde los botones físicos de la impresora (consulta el manual de tu modelo).",
+        "verification_question": "¿Inició el ciclo de limpieza? (La impresora hace ruidos por ~2 minutos)"
+      },
+      {
+        "order": 2,
+        "title": "Espera que termine y haz prueba de boquillas",
+        "description": "Después de la limpieza, en la misma ventana de Mantenimiento haz clic en 'Verificación de boquillas' para imprimir un patrón de prueba.",
+        "tip": "El patrón de prueba muestra líneas de colores. Si hay líneas cortadas, se necesita otra limpieza.",
+        "verification_question": "¿Las líneas del patrón están completas y sin cortes?"
+      },
+      {
+        "order": 3,
+        "title": "Segunda limpieza si es necesario",
+        "description": "Si el patrón aún tiene líneas cortadas, repite la limpieza. Puedes hacer hasta 3 ciclos seguidos. Espera 5 minutos entre cada uno.",
+        "tip": "No hagas más de 3 limpiezas seguidas — gasta mucha tinta.",
+        "verification_question": "¿Mejoró el patrón de boquillas?"
+      },
+      {
+        "order": 4,
+        "title": "Limpieza profunda (si los 3 ciclos no funcionaron)",
+        "description": "En Mantenimiento, busca 'Limpieza a fondo' o 'Power Cleaning'. Esta usa más tinta pero es más efectiva para cabezales muy obstruidos.",
+        "tip": "Esta limpieza consume una cantidad significativa de tinta. Asegúrate de tener tinta suficiente.",
+        "verification_question": "¿Mejoró la calidad de impresión?"
+      },
+      {
+        "order": 5,
+        "title": "Imprime páginas de calibración",
+        "description": "Una vez limpio el cabezal, ve a Mantenimiento → 'Alineación de cabezal de impresión' para calibrar la impresora.",
+        "verification_question": "¿La impresión de prueba final se ve correcta?"
+      }
+    ]
+  },
+  {
+    "error_code": "connectivity",
+    "title": "Solucionar problemas de conexión",
+    "difficulty": "easy",
+    "estimated_minutes": 10,
+    "requires_admin": false,
+    "applicable_series": "ALL",
+    "steps": [
+      {
+        "order": 1,
+        "title": "Verifica el spooler de impresión en Windows",
+        "description": "Presiona Win+R, escribe 'services.msc', busca 'Cola de impresión' (Print Spooler). Si está detenido, haz clic derecho → Iniciar. Si ya corre, reinícialo.",
+        "tip": "Un spooler colgado es la causa más común de impresora 'desaparecida'.",
+        "verification_question": "¿El servicio 'Cola de impresión' está ejecutándose?"
+      },
+      {
+        "order": 2,
+        "title": "Limpia la cola de impresión",
+        "description": "Abre CMD como Administrador y ejecuta: net stop spooler && del /Q /F /S \"%systemroot%\\System32\\spool\\PRINTERS\\*.*\" && net start spooler",
+        "tip": "Esto elimina trabajos de impresión atascados que pueden bloquear la impresora.",
+        "verification_question": "¿El comando completó sin errores?"
+      },
+      {
+        "order": 3,
+        "title": "Reconecta la impresora",
+        "description": "Para USB: desconecta y vuelve a conectar el cable. Para WiFi: apaga la impresora 30 segundos y enciéndela. Espera que se reconecte a la red.",
+        "verification_question": "¿Windows detectó la impresora (sonido o notificación)?"
+      },
+      {
+        "order": 4,
+        "title": "Ejecuta el solucionador de problemas de Windows",
+        "description": "Ve a Configuración → Sistema → Solución de problemas → Otros solucionadores → Impresora → Ejecutar. Windows detectará y corregirá problemas automáticamente.",
+        "verification_question": "¿El solucionador encontró y corrigió algo?"
+      },
+      {
+        "order": 5,
+        "title": "Prueba de impresión final",
+        "description": "Abre cualquier documento y prueba imprimir. La impresora debe aparecer en la lista de impresoras disponibles.",
+        "verification_question": "¿Pudo imprimir correctamente?"
+      }
+    ]
+  },
+  {
+    "error_code": "driver",
+    "title": "Reinstalar controlador Epson",
+    "difficulty": "medium",
+    "estimated_minutes": 20,
+    "requires_admin": true,
+    "applicable_series": "ALL",
+    "steps": [
+      {
+        "order": 1,
+        "title": "Desinstala el driver actual",
+        "description": "Ve a Panel de Control → Programas → Desinstalar. Busca todo lo relacionado con 'Epson' y desinstala. También ve a Dispositivos e Impresoras, clic derecho en tu Epson → Quitar dispositivo.",
+        "tip": "Usa 'Epson Printer Finder' si tienes el software Epson instalado — tiene desinstalador limpio.",
+        "verification_question": "¿Eliminaste todos los programas Epson de la lista?"
+      },
+      {
+        "order": 2,
+        "title": "Reinicia la computadora",
+        "description": "Es importante reiniciar antes de instalar el nuevo driver para que Windows limpie los archivos temporales del driver anterior.",
+        "verification_question": "¿Reiniciaste la computadora?"
+      },
+      {
+        "order": 3,
+        "title": "Descarga el driver correcto",
+        "description": "Ve a epson.com.mx (o epson.com) → Soporte → busca tu modelo exacto → descarga el driver completo para Windows 11/10. Asegúrate de seleccionar tu idioma y versión de Windows.",
+        "tip": "El driver 'completo' incluye el software de mantenimiento y es más confiable que solo el driver básico.",
+        "verification_question": "¿Descargaste el instalador oficial de Epson?"
+      },
+      {
+        "order": 4,
+        "title": "Instala el nuevo driver",
+        "description": "Ejecuta el instalador como Administrador. Cuando pida conectar la impresora, conecta el USB o únete a la red WiFi según indique. Sigue todos los pasos del asistente.",
+        "verification_question": "¿El instalador terminó sin errores?"
+      },
+      {
+        "order": 5,
+        "title": "Prueba de impresión",
+        "description": "Imprime la página de prueba que ofrece el instalador, o ve a Panel de Control → Dispositivos e Impresoras → clic derecho → 'Imprimir página de prueba'.",
+        "verification_question": "¿La página de prueba salió correctamente?"
+      }
+    ]
+  },
+  {
+    "error_code": "ink",
+    "title": "Solucionar problema de cartucho no reconocido",
+    "difficulty": "easy",
+    "estimated_minutes": 8,
+    "requires_admin": false,
+    "applicable_series": "Expression,WorkForce",
+    "steps": [
+      {
+        "order": 1,
+        "title": "Apaga y desenchufa la impresora",
+        "description": "Presiona el botón de encendido para apagar. Espera 30 segundos. Desconecta el cable de alimentación.",
+        "verification_question": "¿Apagaste y desenchufaste la impresora?"
+      },
+      {
+        "order": 2,
+        "title": "Retira y limpia el cartucho",
+        "description": "Abre la tapa de cartuchos. Retira el cartucho que da error. Con un paño seco o Q-tip, limpia suavemente los contactos dorados del cartucho Y los contactos dentro de la impresora.",
+        "tip": "No uses agua ni alcohol — un paño seco es suficiente. Los contactos sucios son la causa #1 de este error.",
+        "verification_question": "¿Limpiaste los contactos del cartucho y de la impresora?"
+      },
+      {
+        "order": 3,
+        "title": "Reinstala el cartucho firmemente",
+        "description": "Inserta el cartucho y presiónalo hasta escuchar un 'clic'. Un cartucho mal asentado da el mismo error que uno no reconocido.",
+        "verification_question": "¿Escuchaste el clic de ajuste?"
+      },
+      {
+        "order": 4,
+        "title": "Enciende y verifica",
+        "description": "Conecta el cable de poder y enciende la impresora. Espera que complete la inicialización. El error debe desaparecer.",
+        "verification_question": "¿El error de cartucho desapareció?"
+      },
+      {
+        "order": 5,
+        "title": "Si persiste: verifica compatibilidad",
+        "description": "Si el cartucho es de terceros o rellenado, puede no ser reconocido. Epson recomienda cartuchos originales. Si es original, puede estar defectuoso — contacta al proveedor.",
+        "tip": "Guarda el recibo del cartucho — puede estar en garantía.",
+        "verification_question": "¿Pudiste resolver el problema del cartucho?"
+      }
+    ]
+  },
+  {
+    "error_code": "hardware",
+    "title": "Diagnóstico de error de hardware interno",
+    "difficulty": "hard",
+    "estimated_minutes": 15,
+    "requires_admin": false,
+    "applicable_series": "ALL",
+    "steps": [
+      {
+        "order": 1,
+        "title": "Apaga y desconecta completamente",
+        "description": "Apaga la impresora con el botón de encendido. Desconecta el cable de alimentación. Espera 2 minutos completos para descargar los capacitores internos.",
+        "tip": "2 minutos es importante — no 30 segundos. Algunos errores de hardware se resetean con un ciclo de energía completo.",
+        "verification_question": "¿Esperaste 2 minutos con la impresora desconectada?"
+      },
+      {
+        "order": 2,
+        "title": "Revisa el interior visualmente",
+        "description": "Abre todas las tapas de acceso. Con una linterna, revisa que no haya: papel atorado, objetos extraños, cartuchos mal colocados, o daños visibles en componentes.",
+        "tip": "Busca especialmente en el área del carro de impresión y los rodillos de papel.",
+        "verification_question": "¿El interior está limpio y sin obstrucciones?"
+      },
+      {
+        "order": 3,
+        "title": "Enciende y observa el comportamiento",
+        "description": "Conecta el cable de poder y enciende. Observa: ¿qué luces parpadean? ¿La impresora hace ruidos inusuales? ¿El carro se mueve normalmente durante la inicialización?",
+        "tip": "Anota exactamente qué ocurre durante el arranque — esto ayuda al técnico si necesitas llevarla a servicio.",
+        "verification_question": "¿El error desapareció con el ciclo de energía completo?"
+      },
+      {
+        "order": 4,
+        "title": "Actualiza el firmware",
+        "description": "Ve a epson.com → Soporte → busca tu modelo → descarga e instala el firmware más reciente. Algunos errores de hardware se corrigen con actualizaciones.",
+        "tip": "No interrumpas la actualización de firmware — podría dañar la impresora permanentemente.",
+        "verification_question": "¿Instalaste el firmware más reciente?"
+      },
+      {
+        "order": 5,
+        "title": "Contacta servicio técnico autorizado",
+        "description": "Si el error persiste, este tipo de fallo (sensor de temperatura, ventilador, rodillo) generalmente requiere reemplazo de componentes internos. Busca un Centro de Servicio Epson autorizado en tu zona.",
+        "tip": "Guarda el número de serie de tu impresora (etiqueta en la parte trasera) antes de llevarla a servicio.",
+        "verification_question": "¿Necesitas ayuda para localizar el centro de servicio más cercano?"
+      }
+    ]
+  }
+]
