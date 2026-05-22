@@ -25,14 +25,23 @@ ERROR_CODE_MAP: dict[str, dict] = {
     # Paper
     "0x10": {"category": "paper",       "title": "Atasco o error de papel",            "severity": "warning"},
     "0x0a": {"category": "paper",       "title": "Atasco de carro de impresión",       "severity": "warning"},
+    "0xf3": {"category": "paper",       "title": "Fallo de sensor de paso de papel (0xF3)", "severity": "critical"},
+    "0xe1": {"category": "paper",       "title": "Error de bandeja de salida / CD (0xE1)", "severity": "warning"},
     # Print head
     "0x09": {"category": "head_clog",   "title": "Error en ciclo de limpieza",         "severity": "warning"},
     "0x27": {"category": "hardware",    "title": "Error de temperatura del cabezal",   "severity": "critical"},
     # Ink / cartridge
     "0x0b": {"category": "ink",         "title": "Cartucho no reconocido",             "severity": "warning"},
+    "0x80": {"category": "ink",         "title": "Error de circuito de tinta / Chip (0x80)", "severity": "critical"},
+    # Hardware / System
     "0x19": {"category": "hardware",    "title": "Error de sensor de temperatura",     "severity": "critical"},
     "0x2a": {"category": "hardware",    "title": "Error de rodillo de tinta",          "severity": "critical"},
     "0x31": {"category": "hardware",    "title": "Error de ventilador de enfriamiento","severity": "critical"},
+    "0xf1": {"category": "hardware",    "title": "Fallo crítico de carro / PF motor (0xF1)", "severity": "critical"},
+    "0xf4": {"category": "hardware",    "title": "Fallo de sensor / succión de tinta (0xF4)", "severity": "critical"},
+    "0xe8": {"category": "hardware",    "title": "Error de comunicación de escáner (0xE8)", "severity": "warning"},
+    "0xe3": {"category": "hardware",    "title": "Cubierta abierta en operación (0xE3)", "severity": "warning"},
+    "0xfa": {"category": "hardware",    "title": "Fallo de arranque de firmware (0xFA)", "severity": "critical"},
 }
 
 SYMPTOM_MAP: dict[str, str] = {

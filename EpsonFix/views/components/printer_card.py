@@ -6,7 +6,7 @@ from core.printer_detector import get_printer_status_label
 class PrinterCard(ctk.CTkFrame):
     """Card cuadrada por impresora en el dashboard principal."""
 
-    def __init__(self, parent, printer, on_diagnose, on_history, **kwargs):
+    def __init__(self, parent, printer, on_diagnose, on_history, on_edit, on_delete, **kwargs):
         super().__init__(
             parent,
             width=CARD_W,
@@ -20,6 +20,8 @@ class PrinterCard(ctk.CTkFrame):
         self.printer = printer
         self.on_diagnose = on_diagnose
         self.on_history = on_history
+        self.on_edit = on_edit
+        self.on_delete = on_delete
         self._build()
         self._bind_hover()
 
@@ -44,6 +46,34 @@ class PrinterCard(ctk.CTkFrame):
             anchor="w",
         )
         name_lbl.grid(row=0, column=1, sticky="w")
+
+        edit_btn = ctk.CTkButton(
+            header,
+            text="✏️",
+            font=("Segoe UI Emoji", 11),
+            fg_color="transparent",
+            hover_color=COLORS["border"],
+            text_color=COLORS["text_secondary"],
+            width=24,
+            height=24,
+            corner_radius=4,
+            command=self._on_edit_click,
+        )
+        edit_btn.grid(row=0, column=2, padx=2)
+
+        delete_btn = ctk.CTkButton(
+            header,
+            text="🗑️",
+            font=("Segoe UI Emoji", 11),
+            fg_color="transparent",
+            hover_color=COLORS["border"],
+            text_color=COLORS["text_secondary"],
+            width=24,
+            height=24,
+            corner_radius=4,
+            command=self._on_delete_click,
+        )
+        delete_btn.grid(row=0, column=3, padx=(2, 0))
 
         # Modelo / serie
         model_text = f"{self.printer.model or 'Desconocido'} · {self.printer.series or 'Epson'}"
@@ -124,3 +154,11 @@ class PrinterCard(ctk.CTkFrame):
                 bind_recursive(child)
 
         bind_recursive(self)
+
+    def _on_edit_click(self):
+        if self.on_edit:
+            self.on_edit(self.printer)
+
+    def _on_delete_click(self):
+        if self.on_delete:
+            self.on_delete(self.printer)

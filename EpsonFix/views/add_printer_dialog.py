@@ -1,6 +1,10 @@
 import customtkinter as ctk
+import threading
+from tkinter import messagebox
+
 from config import COLORS, FONTS, CORNER_RADIUS
 from core.printer_detector import list_printers, _detect_series, _extract_model
+from core.validation import clean_text, validate_ip, validate_model, validate_printer_system_name
 
 
 class AddPrinterDialog(ctk.CTkToplevel):
@@ -13,8 +17,19 @@ class AddPrinterDialog(ctk.CTkToplevel):
         self.configure(fg_color=COLORS["bg_primary"])
         self.grab_set()
 
-        self._detected: list = list_printers()
+        self._detected: list = []
         self._build()
+        threading.Thread(target=self._load_printers, daemon=True).start()
+
+    def _load_printers(self):
+        try:
+            printers = list_printers()
+        except Exception:
+            printers = []
+        if not self.winfo_exists():
+            return
+        self._detected = printers
+        self.after(0, self._update_system_combo)
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
@@ -34,12 +49,12 @@ class AddPrinterDialog(ctk.CTkToplevel):
         form.grid_columnconfigure(1, weight=1)
 
         fields = [
-            ("Nombre personalizado *", "entry", "name",        "Ej: Epson de Recepción"),
-            ("Impresora del sistema",  "combo", "system_name", None),
-            ("Modelo",                "entry", "model",       "Ej: L3210, WF-2850"),
-            ("Serie",                 "combo", "series",      None),
-            ("Conexión",              "combo", "connection",  None),
-            ("IP (si aplica)",        "entry", "ip_address",  "Solo si es de red/WiFi"),
+            ("Nombre personalizado *", "entry", "name", "Ej: Epson de Recepcion"),
+            ("Impresora del sistema", "combo", "system_name", None),
+            ("Modelo", "entry", "model", "Ej: L3210, WF-2850"),
+            ("Serie", "combo", "series", None),
+            ("Conexion", "combo", "connection", None),
+            ("IP (si aplica)", "entry", "ip_address", "Solo si es de red/WiFi"),
         ]
 
         self._widgets = {}
@@ -55,7 +70,7 @@ class AddPrinterDialog(ctk.CTkToplevel):
                     font=FONTS["body"], fg_color=COLORS["bg_primary"],
                     border_color=COLORS["border"], corner_radius=6,
                 )
-            elif wtype == "combo":
+            else:
                 options = self._get_combo_options(key)
                 w = ctk.CTkComboBox(
                     form, values=options, font=FONTS["body"],
@@ -68,7 +83,6 @@ class AddPrinterDialog(ctk.CTkToplevel):
             w.grid(row=i, column=1, sticky="ew", padx=(8, 16), pady=(10, 0))
             self._widgets[key] = w
 
-        # Auto-complete desde impresora detectada
         sys_combo = self._widgets.get("system_name")
         if sys_combo:
             sys_combo.configure(command=self._on_printer_selected)
@@ -80,10 +94,20 @@ class AddPrinterDialog(ctk.CTkToplevel):
             command=self._save,
         ).grid(row=3, column=0, pady=20, ipadx=20)
 
+    def _update_system_combo(self):
+        if not self.winfo_exists():
+            return
+        combo = self._widgets.get("system_name")
+        if combo is None:
+            return
+        names = [p.system_name for p in self._detected]
+        options = names if names else ["(No detectadas automaticamente)"]
+        combo.configure(values=options)
+        combo.set(options[0])
+
     def _get_combo_options(self, key: str) -> list[str]:
         if key == "system_name":
-            detected_names = [p.system_name for p in self._detected]
-            return detected_names if detected_names else ["(No detectadas automáticamente)"]
+            return ["Detectando..."]
         if key == "series":
             return ["EcoTank", "WorkForce", "Expression", "SureColor", "Otra"]
         if key == "connection":
@@ -103,18 +127,26 @@ class AddPrinterDialog(ctk.CTkToplevel):
             self._widgets["connection"].set(match.connection)
 
     def _save(self):
-        name = self._widgets["name"].get().strip()
-        if not name:
+        try:
+            name = clean_text(self._widgets["name"].get(), 100)
+            if not name:
+                raise ValueError("Nombre requerido.")
+            model_raw = validate_model(self._widgets["model"].get())
+            ip_address = validate_ip(self._widgets["ip_address"].get())
+            system_name_raw = self._widgets["system_name"].get()
+            system_name = (
+                None
+                if system_name_raw == "(No detectadas automaticamente)"
+                else validate_printer_system_name(system_name_raw)
+            )
+        except ValueError as exc:
             self._widgets["name"].configure(border_color=COLORS["error"])
+            messagebox.showerror("Datos invalidos", str(exc))
             return
 
-        model_raw = self._widgets["model"].get().strip()
         series = self._widgets["series"].get()
         if not series or series == "Otra":
             series = _detect_series(model_raw) if model_raw else None
-
-        system_name_raw = self._widgets["system_name"].get()
-        system_name = None if system_name_raw == "(No detectadas automáticamente)" else system_name_raw
 
         data = {
             "name": name,
@@ -122,7 +154,7 @@ class AddPrinterDialog(ctk.CTkToplevel):
             "model": model_raw or (system_name and _extract_model(system_name)),
             "series": series,
             "connection": self._widgets["connection"].get(),
-            "ip_address": self._widgets["ip_address"].get().strip() or None,
+            "ip_address": ip_address,
         }
         self.on_save(data)
         self.destroy()

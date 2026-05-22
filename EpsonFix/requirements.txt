@@ -4,4 +4,5 @@ sqlalchemy==2.0.36
 pywin32==308
 wmi==1.5.1
 pyusb==1.2.1
+libusb==1.0.27b5
 pyinstaller==6.11.1

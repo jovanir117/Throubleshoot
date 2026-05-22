@@ -13,11 +13,17 @@ class WizardView(ctk.CTkToplevel):
         self.on_complete = on_complete
         self.steps = solution.steps
         self.current_step_idx = 0
+        if not self.steps:
+            self.destroy()
+            parent.show_error("La solucion seleccionada no tiene pasos configurados.")
+            return
 
         self.title(f"EpsonFix — {solution.title}")
-        self.geometry("720x560")
+        self.geometry("720x580")
         self.resizable(False, False)
         self.configure(fg_color=COLORS["bg_primary"])
+        
+        self.transient(parent)
         self.grab_set()
 
         self._build()
@@ -70,7 +76,7 @@ class WizardView(ctk.CTkToplevel):
             text_color=COLORS["brand"],
             width=56,
         )
-        self.step_num_lbl.grid(row=0, column=0, rowspan=3, padx=(20, 12), pady=20, sticky="n")
+        self.step_num_lbl.grid(row=0, column=0, rowspan=5, padx=(20, 12), pady=20, sticky="n")
 
         # Step title
         self.step_title_lbl = ctk.CTkLabel(
@@ -120,6 +126,18 @@ class WizardView(ctk.CTkToplevel):
             text_color=COLORS["warning"],
             anchor="w",
             wraplength=540,
+        )
+
+        # Action button (dynamic for interactive steps)
+        self.action_btn = ctk.CTkButton(
+            self.content_card,
+            text="",
+            font=("Segoe UI", 12, "bold"),
+            fg_color=COLORS["brand"],
+            hover_color=COLORS["brand_light"],
+            corner_radius=CORNER_RADIUS,
+            command=self._on_action_click,
+            height=36,
         )
 
         # Footer buttons
@@ -185,6 +203,16 @@ class WizardView(ctk.CTkToplevel):
         else:
             self.verify_lbl.grid_remove()
 
+        # Configurar y posicionar el botón de acción si existe action_key en el paso
+        action_key = getattr(step, "action_key", None)
+        action_label = getattr(step, "action_label", None) or "Ejecutar Acción"
+        
+        if action_key:
+            self.action_btn.configure(text=f"⚡ {action_label}")
+            self.action_btn.grid(row=4, column=1, sticky="w", padx=(0, 20), pady=(0, 12))
+        else:
+            self.action_btn.grid_remove()
+
         is_first = (idx == 0)
         is_last = (idx == len(self.steps) - 1)
         self.back_btn.configure(state="disabled" if is_first else "normal")
@@ -202,8 +230,23 @@ class WizardView(ctk.CTkToplevel):
             self.current_step_idx -= 1
             self._show_step(self.current_step_idx)
 
+    def _on_action_click(self):
+        step = self.steps[self.current_step_idx]
+        action_key = getattr(step, "action_key", None)
+        if not action_key:
+            return
+
+        from views.console_view import ConsoleView
+        from core.step_actions import execute_action
+
+        console = ConsoleView(self, title=step.action_label or "Ejecutando Acción")
+        printer_sys_name = getattr(self.printer, "system_name", None)
+        
+        # Ejecutar acción y pasar el flujo al generador de la consola virtual
+        gen = execute_action(action_key, printer_sys_name)
+        console.run_generator(gen)
+
     def _on_problem(self):
-        # Muestra diálogo con tip extra o sugiere otra solución
         dialog = ctk.CTkInputDialog(
             text="Describe brevemente el problema con este paso:",
             title="¿Qué ocurrió?",
