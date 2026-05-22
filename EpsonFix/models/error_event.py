@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, Index
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from database.db_manager import Base
@@ -19,3 +19,6 @@ class ErrorEvent(Base):
 
     printer = relationship("PrinterProfile", back_populates="errors")
     session = relationship("RepairSession", back_populates="error_event", foreign_keys=[session_id])
+
+
+Index("ix_error_events_printer_occurred", ErrorEvent.printer_id, ErrorEvent.occurred_at)

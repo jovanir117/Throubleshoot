@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, DateTime, Index
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from database.db_manager import Base
@@ -33,6 +33,9 @@ class Solution(Base):
         return series in self.applicable_series.split(",")
 
 
+Index("ix_solutions_error_code", Solution.error_code)
+
+
 class SolutionStep(Base):
     __tablename__ = "solution_steps"
 
@@ -44,6 +47,8 @@ class SolutionStep(Base):
     image_path = Column(String(300))
     tip = Column(Text)                                 # Tip extra si el paso es confuso
     verification_question = Column(Text)               # "¿Apareció el menú de mantenimiento?"
+    action_key = Column(String(50))                    # Identificador de la acción de sistema asociada
+    action_label = Column(String(100))                 # Texto para el botón de acción
 
     solution = relationship("Solution", back_populates="steps")
 
@@ -65,3 +70,7 @@ class RepairSession(Base):
     solution = relationship("Solution", back_populates="sessions")
     error_event = relationship("ErrorEvent", back_populates="session",
                                foreign_keys="ErrorEvent.session_id")
+
+
+Index("ix_repair_sessions_printer_started", RepairSession.printer_id, RepairSession.started_at)
+Index("ix_repair_sessions_error_code", RepairSession.error_code)

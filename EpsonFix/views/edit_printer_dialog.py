@@ -1,5 +1,4 @@
 import customtkinter as ctk
-import threading
 from tkinter import messagebox
 
 from config import COLORS, FONTS, CORNER_RADIUS
@@ -7,40 +6,31 @@ from core.printer_detector import list_printers, _detect_series, _extract_model
 from core.validation import clean_text, validate_ip, validate_model, validate_printer_system_name
 
 
-class AddPrinterDialog(ctk.CTkToplevel):
-    def __init__(self, parent, on_save):
+class EditPrinterDialog(ctk.CTkToplevel):
+    def __init__(self, parent, printer, on_save):
         super().__init__(parent)
+        self.printer = printer
         self.on_save = on_save
-        self.title("Agregar impresora Epson")
+        self.title("Editar impresora - EpsonFix")
         self.geometry("500x480")
         self.resizable(False, False)
         self.configure(fg_color=COLORS["bg_primary"])
         self.grab_set()
 
-        self._detected: list = []
+        self._detected: list = list_printers()
         self._build()
-        threading.Thread(target=self._load_printers, daemon=True).start()
-
-    def _load_printers(self):
-        try:
-            printers = list_printers()
-        except Exception:
-            printers = []
-        if not self.winfo_exists():
-            return
-        self._detected = printers
-        self.after(0, self._update_system_combo)
+        self._load_printer_data()
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
-            self, text="Agregar impresora",
+            self, text="Editar impresora",
             font=FONTS["title"], text_color=COLORS["text_primary"]
         ).grid(row=0, column=0, pady=(20, 4))
 
         ctk.CTkLabel(
-            self, text="Asigna un nombre identificable para esta impresora",
+            self, text="Modifica los datos de la impresora seleccionada",
             font=FONTS["body"], text_color=COLORS["text_secondary"]
         ).grid(row=1, column=0, pady=(0, 16))
 
@@ -88,31 +78,41 @@ class AddPrinterDialog(ctk.CTkToplevel):
             sys_combo.configure(command=self._on_printer_selected)
 
         ctk.CTkButton(
-            self, text="Guardar impresora",
+            self, text="Guardar cambios",
             font=FONTS["body"], fg_color=COLORS["brand"],
             hover_color=COLORS["brand_light"], corner_radius=CORNER_RADIUS,
             command=self._save,
         ).grid(row=3, column=0, pady=20, ipadx=20)
 
-    def _update_system_combo(self):
-        if not self.winfo_exists():
-            return
-        combo = self._widgets.get("system_name")
-        if combo is None:
-            return
-        names = [p.system_name for p in self._detected]
-        options = names if names else ["(No detectadas automaticamente)"]
-        combo.configure(values=options)
-        combo.set(options[0])
-
     def _get_combo_options(self, key: str) -> list[str]:
         if key == "system_name":
-            return ["Detectando..."]
+            detected_names = [p.system_name for p in self._detected]
+            current_sys = self.printer.system_name
+            if current_sys and current_sys not in detected_names:
+                detected_names.insert(0, current_sys)
+            return detected_names if detected_names else ["(No detectadas automaticamente)"]
         if key == "series":
             return ["EcoTank", "WorkForce", "Expression", "SureColor", "Otra"]
         if key == "connection":
             return ["USB", "WiFi", "Red (Ethernet)"]
         return []
+
+    def _load_printer_data(self):
+        self._widgets["name"].insert(0, self.printer.name or "")
+
+        if self.printer.system_name:
+            self._widgets["system_name"].set(self.printer.system_name)
+        else:
+            self._widgets["system_name"].set("(No detectadas automaticamente)")
+
+        if self.printer.model:
+            self._widgets["model"].insert(0, self.printer.model)
+
+        self._widgets["series"].set(self.printer.series or "EcoTank")
+        self._widgets["connection"].set(self.printer.connection or "USB")
+
+        if self.printer.ip_address:
+            self._widgets["ip_address"].insert(0, self.printer.ip_address)
 
     def _on_printer_selected(self, system_name: str):
         match = next((p for p in self._detected if p.system_name == system_name), None)
@@ -156,5 +156,5 @@ class AddPrinterDialog(ctk.CTkToplevel):
             "connection": self._widgets["connection"].get(),
             "ip_address": ip_address,
         }
-        self.on_save(data)
+        self.on_save(self.printer.id, data)
         self.destroy()

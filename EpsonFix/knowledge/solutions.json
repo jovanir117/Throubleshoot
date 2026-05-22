@@ -96,9 +96,11 @@
       {
         "order": 1,
         "title": "Ejecuta limpieza automática desde Windows",
-        "description": "Ve a Panel de Control → Dispositivos e Impresoras → Clic derecho en tu Epson → 'Preferencias de impresión' → pestaña 'Mantenimiento' → 'Limpieza de cabezales'.",
+        "description": "Ve a Panel de Control → Dispositivos e Impresoras → Clic derecho en tu Epson → 'Preferencias de impresión' → pestaña 'Mantenimiento' → 'Limpieza de cabezales'. Puedes abrir Preferencias directamente usando el botón inferior.",
         "tip": "También puedes hacerlo desde los botones físicos de la impresora (consulta el manual de tu modelo).",
-        "verification_question": "¿Inició el ciclo de limpieza? (La impresora hace ruidos por ~2 minutos)"
+        "verification_question": "¿Inició el ciclo de limpieza? (La impresora hace ruidos por ~2 minutos)",
+        "action_key": "open_preferences",
+        "action_label": "Abrir Preferencias de Impresión"
       },
       {
         "order": 2,
@@ -124,8 +126,10 @@
       {
         "order": 5,
         "title": "Imprime páginas de calibración",
-        "description": "Una vez limpio el cabezal, ve a Mantenimiento → 'Alineación de cabezal de impresión' para calibrar la impresora.",
-        "verification_question": "¿La impresión de prueba final se ve correcta?"
+        "description": "Una vez limpio el cabezal, ve a Mantenimiento → 'Alineación de cabezal de impresión' para calibrar la impresora. Imprime una página de prueba final con el botón de abajo.",
+        "verification_question": "¿La impresión de prueba final se ve correcta?",
+        "action_key": "print_test",
+        "action_label": "Imprimir Página de Prueba"
       }
     ]
   },
@@ -140,16 +144,20 @@
       {
         "order": 1,
         "title": "Verifica el spooler de impresión en Windows",
-        "description": "Presiona Win+R, escribe 'services.msc', busca 'Cola de impresión' (Print Spooler). Si está detenido, haz clic derecho → Iniciar. Si ya corre, reinícialo.",
+        "description": "Busca el servicio 'Cola de impresión' (Print Spooler). Puedes reiniciarlo directamente aquí.",
         "tip": "Un spooler colgado es la causa más común de impresora 'desaparecida'.",
-        "verification_question": "¿El servicio 'Cola de impresión' está ejecutándose?"
+        "verification_question": "¿El servicio 'Cola de impresión' está ejecutándose?",
+        "action_key": "spooler_restart",
+        "action_label": "Reiniciar Spooler de Impresión"
       },
       {
         "order": 2,
         "title": "Limpia la cola de impresión",
-        "description": "Abre CMD como Administrador y ejecuta: net stop spooler && del /Q /F /S \"%systemroot%\\System32\\spool\\PRINTERS\\*.*\" && net start spooler",
-        "tip": "Esto elimina trabajos de impresión atascados que pueden bloquear la impresora.",
-        "verification_question": "¿El comando completó sin errores?"
+        "description": "Esto eliminará todos los trabajos atascados en la cola de Windows que bloquean la impresora.",
+        "tip": "Esto detiene temporalmente el spooler, vacía el directorio de spools y lo re-inicia.",
+        "verification_question": "¿La cola de impresión se vació correctamente?",
+        "action_key": "spooler_clear_queue",
+        "action_label": "Vaciar Cola de Impresión"
       },
       {
         "order": 3,
@@ -160,14 +168,18 @@
       {
         "order": 4,
         "title": "Ejecuta el solucionador de problemas de Windows",
-        "description": "Ve a Configuración → Sistema → Solución de problemas → Otros solucionadores → Impresora → Ejecutar. Windows detectará y corregirá problemas automáticamente.",
-        "verification_question": "¿El solucionador encontró y corrigió algo?"
+        "description": "Ve a Configuración → Sistema → Solución de problemas → Otros solucionadores → Impresora → Ejecutar. O puedes abrir la cola directamente aquí para ver su estado.",
+        "verification_question": "¿El solucionador encontró y corrigió algo o la cola responde?",
+        "action_key": "open_queue",
+        "action_label": "Abrir Cola de Trabajos"
       },
       {
         "order": 5,
         "title": "Prueba de impresión final",
-        "description": "Abre cualquier documento y prueba imprimir. La impresora debe aparecer en la lista de impresoras disponibles.",
-        "verification_question": "¿Pudo imprimir correctamente?"
+        "description": "Abre cualquier documento y prueba imprimir. Puedes lanzar una impresión de prueba directa desde aquí.",
+        "verification_question": "¿Pudo imprimir correctamente?",
+        "action_key": "print_test",
+        "action_label": "Imprimir Página de Prueba"
       }
     ]
   },
@@ -208,8 +220,10 @@
       {
         "order": 5,
         "title": "Prueba de impresión",
-        "description": "Imprime la página de prueba que ofrece el instalador, o ve a Panel de Control → Dispositivos e Impresoras → clic derecho → 'Imprimir página de prueba'.",
-        "verification_question": "¿La página de prueba salió correctamente?"
+        "description": "Imprime la página de prueba que ofrece el instalador, o lanza una página de prueba directa con el botón inferior.",
+        "verification_question": "¿La página de prueba salió correctamente?",
+        "action_key": "print_test",
+        "action_label": "Imprimir Página de Prueba"
       }
     ]
   },
@@ -318,8 +332,10 @@
       {
         "order": 2,
         "title": "Limpiar temporales y cola de impresión",
-        "description": "Ejecuta como Administrador: net stop spooler ; Remove-Item -Path \"$env:windir\\System32\\spool\\PRINTERS\\*\" -Force -ErrorAction SilentlyContinue ; net start spooler. Luego limpia temporales con cleanmgr o Configuración > Almacenamiento.",
-        "verification_question": "¿Se reinició spooler sin errores y se limpiaron temporales?"
+        "description": "Ejecuta como Administrador la limpieza automatizada de temporales de Windows y detén/reinicia la cola de impresión.",
+        "verification_question": "¿Se reinició spooler sin errores y se limpiaron temporales?",
+        "action_key": "spooler_clear_queue",
+        "action_label": "Ejecutar Limpieza Completa"
       },
       {
         "order": 3,
@@ -337,8 +353,10 @@
       {
         "order": 5,
         "title": "Prueba persistente",
-        "description": "Imprime 3 trabajos seguidos (página de prueba + PDF + documento). Verifica que no regrese offline ni atasco de cola.",
-        "verification_question": "¿Los 3 trabajos completaron sin fallas?"
+        "description": "Imprime un trabajo de prueba para validar que todo funcione.",
+        "verification_question": "¿El trabajo de prueba se imprimió correctamente?",
+        "action_key": "print_test",
+        "action_label": "Imprimir Página de Prueba"
       }
     ]
   }
