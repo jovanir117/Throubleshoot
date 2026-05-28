@@ -200,6 +200,103 @@ foreach ($p in $paths) {
 """
 
 
+_STATUS_INPUT_MAP: dict[int, str] = {
+    2: "0x97",
+    4: "0x10",
+    5: "0x0b",
+    6: "0x10",
+    7: "0x10",
+    8: "sin conexion",
+}
+
+
+def full_scan_and_fix_gen(engine, results_out: list):
+    """Phases: auto-discover → diagnose → auto-fix.
+    results_out gets (DetectedPrinter, Diagnosis) for items needing the wizard."""
+    from core.printer_detector import list_printers, get_printer_status_label
+
+    yield "━━━ FASE 1: Descubrimiento automático ━━━"
+    time.sleep(0.3)
+
+    try:
+        printers = list_printers()
+    except Exception as exc:
+        yield f"ERROR en escaneo: {exc}"
+        return False
+
+    if not printers:
+        yield "Sin impresoras Epson detectadas."
+        yield "Verifica conexión USB/WiFi e instalación del driver."
+        return False
+
+    yield f"{len(printers)} impresora(s) encontrada(s):"
+    for p in printers:
+        label, _ = get_printer_status_label(p.status_code)
+        yield f"  {p.system_name}  →  {label}"
+
+    time.sleep(0.3)
+
+    issues = [
+        (p, _STATUS_INPUT_MAP[p.status_code])
+        for p in printers
+        if p.status_code in _STATUS_INPUT_MAP
+    ]
+
+    if not issues:
+        yield ""
+        yield "Todas las impresoras sin errores detectados. Sistema OK."
+        return True
+
+    yield ""
+    yield f"━━━ FASE 2: Diagnóstico ({len(issues)} problema(s)) ━━━"
+    time.sleep(0.3)
+
+    diagnoses = []
+    for printer, error_input in issues:
+        yield f"Analizando: {printer.system_name}..."
+        diagnosis = engine.diagnose_smart(error_input)
+        if diagnosis:
+            yield f"  → {diagnosis.title} [{diagnosis.severity.upper()}]"
+            yield f"  → Categoría: {diagnosis.category}"
+            diagnoses.append((printer, diagnosis))
+        else:
+            yield "  → Sin diagnóstico específico disponible."
+        time.sleep(0.2)
+
+    if not diagnoses:
+        yield ""
+        yield "Diagnóstico completado. Sin soluciones automáticas disponibles."
+        return True
+
+    yield ""
+    yield "━━━ FASE 3: Reparación automática ━━━"
+    time.sleep(0.3)
+
+    any_success = False
+    for printer, diagnosis in diagnoses:
+        if diagnosis.category in ("connectivity", "driver", "system"):
+            yield f"Aplicando auto-fix [{diagnosis.category}] → {printer.system_name}..."
+            sub_gen = run_auto_fix_gen(diagnosis.category)
+            sub_success = False
+            try:
+                while True:
+                    yield f"  {next(sub_gen)}"
+            except StopIteration as e:
+                sub_success = bool(e.value)
+            if sub_success:
+                any_success = True
+            else:
+                results_out.append((printer, diagnosis))
+        else:
+            yield f"  {printer.system_name}: requiere pasos manuales ({diagnosis.category})."
+            results_out.append((printer, diagnosis))
+        time.sleep(0.2)
+
+    yield ""
+    yield "━━━ Escaneo y reparación completados ━━━"
+    return any_success or len(results_out) > 0
+
+
 def _is_admin() -> bool:
     try:
         import ctypes
