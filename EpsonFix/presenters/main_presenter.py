@@ -325,6 +325,42 @@ class MainPresenter:
         import threading
         threading.Thread(target=_bg, daemon=True).start()
 
+    def on_scan_and_fix(self):
+        from core.auto_fix import full_scan_and_fix_gen
+        from views.console_view import ConsoleView
+
+        if not self._view_alive():
+            return
+
+        self.view.set_scan_button_state(False)
+        console = ConsoleView(self.view, title="Escanear y Reparar Todo")
+        results_out: list = []
+
+        def on_console_close():
+            if self._view_alive():
+                self.view.set_scan_button_state(True)
+            self.refresh()
+            if not results_out or not self._view_alive():
+                return
+            printer_det, diagnosis = results_out[0]
+            db_printer = (
+                self.db.query(PrinterProfile)
+                .filter_by(system_name=printer_det.system_name, is_active=True)
+                .first()
+            ) or (
+                self.db.query(PrinterProfile).filter_by(is_active=True).first()
+            )
+            if db_printer:
+                solution = self._get_best_solution(diagnosis, db_printer)
+                if solution:
+                    self.view.show_wizard(solution, db_printer)
+
+        console.bind(
+            "<Destroy>",
+            lambda e: self._after_view(100, on_console_close) if e.widget == console else None,
+        )
+        console.run_generator(full_scan_and_fix_gen(self.engine, results_out))
+
     def on_about(self):
         from views.about_dialog import AboutDialog
         AboutDialog(self.view, presenter=self)

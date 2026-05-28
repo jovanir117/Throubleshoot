@@ -98,13 +98,51 @@ class MainWindow(ctk.CTk):
         self.main_frame.grid(row=2, column=0, sticky="nsew", padx=PADDING, pady=PADDING)
         self.main_frame.grid_columnconfigure(0, weight=1)
 
-        self._section_label(self.main_frame, "Mis impresoras", row=0)
-        self.cards_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        self.cards_frame.grid(row=1, column=0, sticky="ew")
+        # Hero: scan-and-fix button
+        hero = ctk.CTkFrame(
+            self.main_frame,
+            fg_color=COLORS["bg_card"],
+            corner_radius=12,
+            border_width=1,
+            border_color=COLORS["border"],
+        )
+        hero.grid(row=0, column=0, sticky="ew", pady=(4, 16))
+        hero.grid_columnconfigure(0, weight=1)
 
-        self._section_label(self.main_frame, "Últimas reparaciones", row=2)
+        ctk.CTkLabel(
+            hero,
+            text="Diagnóstico automático completo",
+            font=FONTS["heading"],
+            text_color=COLORS["text_primary"],
+        ).grid(row=0, column=0, pady=(14, 2))
+
+        ctk.CTkLabel(
+            hero,
+            text="Detecta, diagnostica y repara impresoras Epson en un solo clic",
+            font=FONTS["body"],
+            text_color=COLORS["text_secondary"],
+        ).grid(row=1, column=0, pady=(0, 10))
+
+        self._scan_btn = ctk.CTkButton(
+            hero,
+            text="🔍  Escanear y Reparar Todo",
+            font=("Segoe UI", 14, "bold"),
+            fg_color=COLORS["brand"],
+            hover_color=COLORS["brand_light"],
+            corner_radius=8,
+            height=44,
+            width=300,
+            command=self._on_scan_and_fix_click,
+        )
+        self._scan_btn.grid(row=2, column=0, pady=(0, 16))
+
+        self._section_label(self.main_frame, "Mis impresoras", row=1)
+        self.cards_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.cards_frame.grid(row=2, column=0, sticky="ew")
+
+        self._section_label(self.main_frame, "Últimas reparaciones", row=3)
         self.history_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        self.history_frame.grid(row=3, column=0, sticky="ew")
+        self.history_frame.grid(row=4, column=0, sticky="ew")
 
     def _build_sidebar(self):
         self.sidebar = ctk.CTkFrame(
@@ -254,6 +292,16 @@ class MainWindow(ctk.CTk):
             text_color=COLORS["text_primary"],
             anchor="w",
         ).grid(row=row, column=0, sticky="w", pady=(12, 6))
+
+    def _on_scan_and_fix_click(self):
+        self.presenter.on_scan_and_fix()
+
+    def set_scan_button_state(self, enabled: bool):
+        if hasattr(self, "_scan_btn") and self._scan_btn.winfo_exists():
+            self._scan_btn.configure(
+                state="normal" if enabled else "disabled",
+                text="🔍  Escanear y Reparar Todo" if enabled else "⏳  Escaneando...",
+            )
 
     def _on_symptom_search(self):
         symptom = self.symptom_entry.get().strip()
